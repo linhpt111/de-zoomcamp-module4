@@ -1,0 +1,15 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl
+
+# Credentials
+*service-account*.json
+google_credentials.json
+
+# Local data / Python
+data/
+__pycache__/
+.venv/
