@@ -20,20 +20,6 @@ BASE_URL = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download"
 
 _local = threading.local()
 
-# FHV tháng 1/2019 để trống PUlocationID/DOlocationID/SR_Flag -> autodetect đoán sai kiểu, nên khai báo cố định.
-# Cột location để FLOAT; dbt staging sẽ cast lại.
-SCHEMAS = {
-    "fhv": [
-        bigquery.SchemaField("dispatching_base_num", "STRING"),
-        bigquery.SchemaField("pickup_datetime", "TIMESTAMP"),
-        bigquery.SchemaField("dropOff_datetime", "TIMESTAMP"),
-        bigquery.SchemaField("PUlocationID", "FLOAT"),
-        bigquery.SchemaField("DOlocationID", "FLOAT"),
-        bigquery.SchemaField("SR_Flag", "FLOAT"),
-        bigquery.SchemaField("Affiliated_base_number", "STRING"),
-    ],
-}
-
 
 def get_bucket(project, bucket_name):
     # Mỗi thread dùng một client riêng cho an toàn
@@ -120,13 +106,9 @@ def load_all(project, bucket_name, dataset, location, colors):
         job_config = bigquery.LoadJobConfig(
             source_format=bigquery.SourceFormat.CSV,
             skip_leading_rows=1,
+            autodetect=True,
             write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
         )
-        # Có schema cố định thì dùng, không thì để BigQuery tự đoán
-        if color in SCHEMAS:
-            job_config.schema = SCHEMAS[color]
-        else:
-            job_config.autodetect = True
         print(f"Đang nạp {uri} -> {table_id} ...")
         job = client.load_table_from_uri(uri, table_id, job_config=job_config)
         try:
